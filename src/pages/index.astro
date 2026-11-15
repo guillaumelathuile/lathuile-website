@@ -1,9 +1,12 @@
 ---
 import Base from '../layouts/Base.astro';
+import { Image } from 'astro:assets';
+import photo from '../assets/accueil.webp';
 const b = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 <Base>
   <h1>Lathuile</h1>
+  <Image src={photo} alt="Décris la photo en une phrase" width={900} class="hero" />
   <p>Des formations pour comprendre les systèmes embarqués automobiles, des bases de l’électronique jusqu’à la validation d’un calculateur.</p>
 
   <h2>Pourquoi ce site</h2>
@@ -33,6 +36,7 @@ const b = import.meta.env.BASE_URL.replace(/\/$/, '');
 <style>
   ul, ol { max-width: 38rem; padding-left: 1.25rem; }
   li { margin: 0.5rem 0; }
+  :global(img.hero) { width: 100%; height: auto; border-radius: 4px; margin: 1.5rem 0; }
   .cta {
     display: inline-block;
     margin-top: 1rem;
