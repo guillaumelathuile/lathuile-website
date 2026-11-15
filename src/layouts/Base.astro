@@ -1,0 +1,29 @@
+---
+import '@fontsource-variable/instrument-sans';
+import '../styles/global.css';
+
+interface Props { title?: string; description?: string; noindex?: boolean }
+const { title, description = 'Formations en systèmes embarqués automobiles.', noindex = false } = Astro.props;
+const b = import.meta.env.BASE_URL.replace(/\/$/, '');
+const full = title ? `${title} – Lathuile` : 'Lathuile';
+const nav = [['Formations', '/formations/'], ['Ressources', '/ressources/'], ['À propos', '/a-propos/'], ['Contact', '/contact/']];
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{full}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="icon" href={`${b}/favicon.svg`} type="image/svg+xml" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href={`${b}/`}>Lathuile</a>
+      <nav>{nav.map(([label, href]) => <a href={`${b}${href}`}>{label}</a>)}</nav>
+    </header>
+    <main><slot /></main>
+    <footer><a href={`${b}/mentions-legales/`}>Mentions légales</a></footer>
+  </body>
+</html>

@@ -1,0 +1,36 @@
+:root {
+  --bg: #f6f7f9; --ink: #14213d; --muted: #5b6678; --line: #d9dde5; --accent: #1f6f5c;
+  --font: "Instrument Sans Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0f1623; --ink: #e8ecf4; --muted: #93a0b5; --line: #263149; --accent: #5fc4a8; }
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font);
+  line-height: 1.6; min-height: 100vh; display: flex; flex-direction: column;
+  padding: env(safe-area-inset-top, 0px) clamp(1.25rem, 6vw, 4rem) env(safe-area-inset-bottom, 0px);
+}
+header, main, footer { width: 100%; max-width: 46rem; margin: 0 auto; }
+header { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; padding: 1.5rem 0; }
+nav { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+a { color: inherit; text-decoration-color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.brand { font-weight: 600; font-size: 1.25rem; letter-spacing: -0.02em; text-decoration: none; }
+nav a { text-decoration: none; color: var(--muted); }
+nav a:hover { color: var(--ink); }
+main { flex: 1; padding: 2.5rem 0 3rem; }
+h1 { font-size: clamp(2rem, 7vw, 3.25rem); line-height: 1.1; letter-spacing: -0.03em; margin: 0 0 1rem; }
+h1::after { content: ""; display: block; width: 3rem; height: 4px; margin-top: 1rem; background: var(--accent); }
+h2 { margin: 2.5rem 0 0.75rem; font-size: 1.25rem; }
+p { max-width: 38rem; }
+.muted { color: var(--muted); }
+.parcours { list-style: none; margin: 1.5rem 0 0; padding: 0; border-top: 1px solid var(--line); }
+.parcours li { border-bottom: 1px solid var(--line); }
+.parcours a { display: grid; grid-template-columns: 2rem 1fr auto; gap: 1rem; align-items: baseline; padding: 1rem 0; text-decoration: none; }
+.parcours a:hover strong { text-decoration: underline; text-decoration-color: var(--accent); }
+.num { color: var(--accent); font-weight: 600; }
+footer { padding: 1.5rem 0; border-top: 1px solid var(--line); font-size: 0.9rem; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }

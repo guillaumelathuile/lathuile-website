@@ -1,0 +1,16 @@
+---
+import Base from '../../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const modules = await getCollection('modules');
+  return modules.map((m) => ({ params: { slug: m.data.parcours, module: m.id }, props: { m } }));
+}
+
+const { m } = Astro.props;
+const { Content } = await render(m);
+---
+<Base title={m.data.title} description={m.data.summary}>
+  <h1>{m.data.title}</h1>
+  <Content />
+</Base>

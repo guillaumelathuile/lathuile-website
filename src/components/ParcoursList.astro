@@ -1,0 +1,20 @@
+---
+import { getCollection } from 'astro:content';
+const b = import.meta.env.BASE_URL.replace(/\/$/, '');
+const parcours = (await getCollection('parcours')).sort((x, y) => x.data.order - y.data.order);
+const modules = await getCollection('modules');
+---
+<ol class="parcours">
+  {parcours.map((p) => {
+    const n = modules.filter((m) => m.data.parcours === p.id).length;
+    return (
+      <li>
+        <a href={`${b}/formations/${p.id}/`}>
+          <span class="num">{p.data.order}</span>
+          <span><strong>{p.data.title}</strong><br /><span class="muted">{p.data.summary}</span></span>
+          <span class="muted">{n ? `${n} module${n > 1 ? 's' : ''}` : 'à venir'}</span>
+        </a>
+      </li>
+    );
+  })}
+</ol>
