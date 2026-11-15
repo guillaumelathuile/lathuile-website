@@ -1,10 +1,47 @@
 ---
 import Base from '../layouts/Base.astro';
-import ParcoursList from '../components/ParcoursList.astro';
+const b = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 <Base>
   <h1>Lathuile</h1>
-  <p>Formations en systèmes embarqués automobiles : de l’électronique de base aux réseaux CAN/LIN, au diagnostic et à la validation.</p>
-  <h2>Les parcours</h2>
-  <ParcoursList />
+  <p>Des formations pour comprendre les systèmes embarqués automobiles, des bases de l’électronique jusqu’à la validation d’un calculateur.</p>
+
+  <h2>Pourquoi ce site</h2>
+  <p>Je me forme au métier d’ingénieur en électronique et systèmes embarqués, dans le domaine automobile. Les bonnes ressources en français sont rares et dispersées : ce site rassemble ce que j’apprends et pratique, expliqué simplement et vérifié avant d’être publié.</p>
+
+  <h2>À qui il s’adresse</h2>
+  <p>Aux étudiants en électronique ou en informatique embarquée, aux ingénieurs juniors, et à toute personne curieuse de savoir comment communiquent et se testent les calculateurs d’une voiture.</p>
+
+  <h2>Ce que l’on y trouve</h2>
+  <ul>
+    <li><strong>Des parcours</strong> qui suivent une progression : fondamentaux, protocoles, réseaux CAN et LIN, diagnostic, validation, cybersécurité et IA appliquées à l’auto.</li>
+    <li><strong>Des modules courts</strong>, avec des slides, des vidéos explicatives et des exercices.</li>
+    <li><strong>Des ressources</strong> : fiches mémo, articles et glossaire.</li>
+  </ul>
+
+  <h2>Comment ça marche</h2>
+  <ol>
+    <li>Choisir un parcours, dans l’ordre conseillé ou à la carte.</li>
+    <li>Suivre ses modules, chacun avec son support et ses exercices.</li>
+    <li>Revenir régulièrement : le contenu est publié progressivement, parcours après parcours.</li>
+  </ol>
+
+  <p><a class="cta" href={`${b}/formations/`}>Voir les formations</a></p>
+  <p class="muted">Ce site est un projet personnel, indépendant de tout employeur ou organisme de formation.</p>
 </Base>
+
+<style>
+  ul, ol { max-width: 38rem; padding-left: 1.25rem; }
+  li { margin: 0.5rem 0; }
+  .cta {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 4px;
+  }
+  .cta:hover { filter: brightness(1.1); }
+</style>
