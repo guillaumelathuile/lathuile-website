@@ -34,3 +34,11 @@ p { max-width: 38rem; }
 .num { color: var(--accent); font-weight: 600; }
 footer { padding: 1.5rem 0; border-top: 1px solid var(--line); font-size: 0.9rem; color: var(--muted); }
 @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+
+table { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; margin: 1.5rem 0; }
+th, td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+th { font-weight: 600; }
+code { font-size: 0.9em; }
+pre { padding: 1rem; border-radius: 4px; overflow-x: auto; }
+details { margin: 1rem 0; padding: 0.75rem 1rem; border: 1px solid var(--line); border-radius: 4px; }
+summary { cursor: pointer; font-weight: 600; }
