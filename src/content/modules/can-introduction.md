@@ -16,6 +16,10 @@ summary: "Principes, couche physique, trame, arbitrage et gestion des erreurs du
 - décrire comment le CAN détecte et confine les erreurs ;
 - décoder un signal à partir d’une trame brute.
 
+<iframe src="../../../slides/can-introduction.html" title="Diaporama : introduction au bus CAN" allowfullscreen style="width:100%;aspect-ratio:16/10;border:1px solid var(--line);border-radius:6px"></iframe>
+
+<p><a href="../../../slides/can-introduction.html">Ouvrir le diaporama en plein écran</a></p>
+
 ## 1. Pourquoi le CAN existe
 
 Avant le CAN, chaque échange entre deux fonctions d’un véhicule passait par un câble dédié. Avec l’augmentation du nombre de calculateurs (ECU), les faisceaux devenaient lourds, chers et difficiles à fiabiliser.
