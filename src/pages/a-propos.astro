@@ -1,8 +1,20 @@
 ---
 import Base from '../layouts/Base.astro';
+const b = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
-<Base title="À propos" noindex>
+<Base title="À propos" description="Qui écrit ce site et pourquoi.">
   <h1>À propos</h1>
-  <p>Ingénieur en formation, en électronique et systèmes embarqués automobiles. [Présentation à compléter.]</p>
+  <p>Je m’appelle Guillaume Lathuile. Je suis élève ingénieur en électronique et systèmes embarqués, en formation par apprentissage : je partage mon temps entre l’école et l’industrie automobile, où je travaille sur la validation de systèmes.</p>
+
+  <h2>Ce que je fais</h2>
+  <p>Au quotidien, je teste et valide des systèmes embarqués automobiles. À l’école, je travaille l’électronique, l’automatique, le traitement du signal, la physique, les statistiques et la programmation en Java.</p>
+
+  <h2>Pourquoi ce site</h2>
+  <p>Il m’a semblé qu’il manquait des ressources claires, en français, qui relient la théorie à la pratique de l’embarqué automobile. J’écris le site que j’aurais aimé avoir en commençant : des parcours progressifs, des explications simples, des exemples concrets.</p>
+
+  <h2>Ma démarche</h2>
+  <p>J’apprends en publiant. Chaque module est relu et vérifié avant sa mise en ligne, et si vous repérez une erreur, je la corrige. Le contenu arrive progressivement, parcours après parcours.</p>
+
+  <p>Une question, une remarque ou une erreur à signaler ? Rendez-vous sur la <a href={`${b}/contact/`}>page contact</a>.</p>
   <p class="muted">Ce site est un projet personnel, indépendant de tout employeur ou organisme de formation.</p>
 </Base>
