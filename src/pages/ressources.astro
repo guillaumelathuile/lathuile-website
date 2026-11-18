@@ -1,7 +1,110 @@
 ---
 import Base from '../layouts/Base.astro';
+
+const sections = [
+  {
+    title: 'Comprendre les réseaux CAN, CAN FD et LIN',
+    intro: 'Des tutoriels gratuits et clairs, pour compléter les modules.',
+    items: [
+      {
+        name: 'CAN Bus Explained : A Simple Intro',
+        source: 'CSS Electronics',
+        url: 'https://www.csselectronics.com/pages/can-bus-simple-intro-tutorial',
+        text: 'Une introduction pratique au CAN : trame, protocoles de couche supérieure, enregistrement et décodage des données.',
+      },
+      {
+        name: 'CAN FD Explained : A Simple Intro',
+        source: 'CSS Electronics',
+        url: 'https://www.csselectronics.com/pages/can-fd-flexible-data-rate-intro',
+        text: 'Ce que le CAN FD change par rapport au CAN classique, avec des exemples d’usage.',
+      },
+      {
+        name: 'LIN Bus Explained : A Simple Intro',
+        source: 'CSS Electronics',
+        url: 'https://csselectronics.com/pages/lin-bus-protocol-intro-basics',
+        text: 'Le LIN face au CAN, son fonctionnement et les six types de trames.',
+      },
+      {
+        name: 'The CAN Bus Protocol Tutorial',
+        source: 'Kvaser',
+        url: 'https://kvaser.com/can-protocol-tutorial',
+        text: 'Un cours plus détaillé sur les normes ISO 11898 : couche physique, copies d’écran d’oscilloscope, temps de bit et gestion des erreurs.',
+      },
+      {
+        name: 'Introduction to the LIN bus',
+        source: 'Kvaser',
+        url: 'https://kvaser.com/about-can/can-standards/linbus/',
+        text: 'Les origines du LIN et le détail de sa couche physique.',
+      },
+    ],
+  },
+  {
+    title: 'Outils gratuits pour manipuler des trames',
+    intro: 'Pour passer de la théorie à la pratique sur un vrai bus, ou sur un bus virtuel.',
+    items: [
+      {
+        name: 'python-can',
+        source: 'Bibliothèque Python',
+        url: 'https://python-can.readthedocs.io/',
+        text: 'Envoyer, recevoir et enregistrer des trames CAN depuis Python, avec de nombreuses interfaces matérielles prises en charge.',
+      },
+      {
+        name: 'cantools',
+        source: 'Bibliothèque Python',
+        url: 'https://cantools.readthedocs.io',
+        text: 'Lire des fichiers DBC, encoder et décoder des messages, tracer des signaux : l’outil idéal pour s’exercer au décodage.',
+      },
+    ],
+  },
+  {
+    title: 'Cybersécurité automobile',
+    intro: 'Le cadre réglementaire dans lequel s’inscrit la sécurité des réseaux embarqués.',
+    items: [
+      {
+        name: 'UN Regulation No. 155 : cybersécurité et système de management de la cybersécurité',
+        source: 'Journal officiel de l’Union européenne (EUR-Lex)',
+        url: 'https://eur-lex.europa.eu/eli/reg/2025/5/oj/eng',
+        text: 'Le texte officiel de la réglementation qui impose aux constructeurs un système de management de la cybersécurité pour l’homologation des véhicules.',
+      },
+    ],
+  },
+];
 ---
-<Base title="Ressources" noindex>
+<Base title="Ressources" description="Une sélection de tutoriels, d’outils gratuits et de références sur les réseaux embarqués automobiles.">
   <h1>Ressources</h1>
-  <p class="muted">Articles courts, fiches mémo et glossaire : à venir.</p>
+  <p>Une sélection de ressources pour aller plus loin que les modules. Les liens mènent vers des sites externes, en anglais pour la plupart : les ressources de qualité en français sont rares, et c’est justement ce que ce site cherche à combler.</p>
+
+  {sections.map((s) => (
+    <section>
+      <h2>{s.title}</h2>
+      <p class="muted">{s.intro}</p>
+      <ul class="res">
+        {s.items.map((i) => (
+          <li>
+            <a href={i.url} target="_blank" rel="noopener noreferrer">{i.name}</a>
+            <span class="src">{i.source} · EN</span>
+            <p>{i.text}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+
+  <h2>Les normes de référence</h2>
+  <p class="muted">Payantes, mais indispensables pour travailler dans le détail.</p>
+  <ul class="res">
+    <li><strong>ISO 11898-1 et ISO 11898-2</strong> : couche liaison de données (CAN et CAN FD) et couche physique haute vitesse. <span class="src">À acheter auprès de l’ISO ou de l’organisme de normalisation national</span></li>
+    <li><strong>ISO 17987</strong> : le bus LIN. <span class="src">Même principe</span></li>
+    <li><strong>ISO/SAE 21434</strong> : ingénierie de la cybersécurité des véhicules routiers. <span class="src">Même principe</span></li>
+  </ul>
+
+  <p class="muted">Sélection personnelle. Certains de ces sites appartiennent à des fabricants de matériel : leurs contenus pédagogiques sont de qualité, mais ils vendent aussi des produits.</p>
 </Base>
+
+<style>
+  .res { list-style: none; margin: 1rem 0 2rem; padding: 0; border-top: 1px solid var(--line); }
+  .res li { padding: 1rem 0; border-bottom: 1px solid var(--line); }
+  .res a, .res strong { font-weight: 600; }
+  .res p { margin: 0.35rem 0 0; }
+  .src { display: block; margin-top: 0.15rem; font-size: 0.9rem; color: var(--muted); }
+</style>
