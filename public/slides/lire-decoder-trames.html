@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lire et décoder des trames CAN – Lathuile</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#14213d;--muted:#5b6678;--line:#d9dde5;--accent:#1f6f5c}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1623;--card:#172033;--ink:#e8ecf4;--muted:#93a0b5;--line:#263149;--accent:#5fc4a8}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Instrument Sans Variable",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+.deck{flex:1;min-height:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none}
+.deck::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;scroll-snap-align:start;padding:clamp(1rem,4vw,2.5rem) clamp(1.25rem,6vw,4rem);overflow-y:auto;display:flex;flex-direction:column;justify-content:center;gap:1rem}
+h1{font-size:clamp(1.9rem,6vw,3.4rem);letter-spacing:-.03em;line-height:1.1;margin:0}
+h2{font-size:clamp(1.3rem,3.6vw,2rem);letter-spacing:-.02em;margin:0}
+h2::after{content:"";display:block;width:2.5rem;height:4px;background:var(--accent);margin-top:.6rem}
+p,li{font-size:clamp(.95rem,2vw,1.15rem);line-height:1.5;margin:0}
+ul{margin:0;padding-left:1.2rem;display:grid;gap:.5rem}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:.75rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:.8rem 1rem;font-size:clamp(.9rem,1.9vw,1.05rem);line-height:1.45}
+.card b{display:block;color:var(--accent);margin-bottom:.2rem}
+svg{width:100%;max-width:640px;height:auto;align-self:center}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;font-size:clamp(.75rem,1.8vw,1rem);margin:0 auto}
+td,th{border:1px solid var(--line);padding:.35rem .6rem;text-align:center}
+th{background:var(--card)}
+code{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:.05rem .35rem;font-size:.92em}
+pre{margin:0;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:.8rem 1rem;overflow-x:auto;font-size:clamp(.72rem,1.7vw,.95rem);line-height:1.5}
+pre code{border:0;padding:0;background:none}
+.prog{height:3px;background:var(--line)}.prog i{display:block;height:100%;width:10%;background:var(--accent);transition:width .25s}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.6rem 1rem}
+button{font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:.4rem .9rem;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,.deck:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.deck{scroll-behavior:auto}.prog i{transition:none}}
+</style>
+</head>
+<body>
+<main class="deck" id="deck" tabindex="0" aria-label="Diaporama : lire et décoder des trames CAN">
+
+<section class="slide">
+<p class="muted">Réseaux automobiles · Module 4</p>
+<h1>Lire et décoder des trames CAN</h1>
+<p>Du fichier DBC à la valeur physique, les pièges courants, et le temps de bit.</p>
+<p class="muted">Tous les exemples sont fictifs. Faites défiler avec les flèches du clavier, le balayage ou les boutons.</p>
+</section>
+
+<section class="slide">
+<h2>De l’octet à la valeur physique</h2>
+<svg viewBox="0 0 640 110" role="img" aria-label="Trame brute, signal, valeur brute, valeur physique" fill="none" stroke="currentColor" stroke-width="2" font-size="13">
+<rect x="10" y="20" width="120" height="40" rx="4"/><rect x="170" y="20" width="120" height="40" rx="4"/><rect x="330" y="20" width="120" height="40" rx="4"/><rect x="490" y="20" width="120" height="40" rx="4" stroke="var(--accent)" stroke-width="3"/>
+<path d="M134 40 H166 M158 34 L166 40 L158 46"/><path d="M294 40 H326 M318 34 L326 40 L318 46"/><path d="M454 40 H486 M478 34 L486 40 L478 46"/>
+<g fill="currentColor" stroke="none" text-anchor="middle"><text x="70" y="45">Trame brute</text><text x="230" y="45">Signal (bits)</text><text x="390" y="45">Valeur brute</text><text x="550" y="45">Valeur physique</text>
+<text x="70" y="85"><tspan font-family="monospace">0x2A0 · E8 03</tspan></text><text x="230" y="85" font-family="monospace">bits 0 à 15</text><text x="390" y="85" font-family="monospace">1000</text><text x="550" y="85" font-family="monospace">100,0 km/h</text></g>
+</svg>
+<p>Le <b>fichier DBC</b> dit où chercher le signal, et comment convertir sa valeur.</p>
+</section>
+
+<section class="slide">
+<h2>Anatomie d’un fichier DBC</h2>
+<pre><code>BO_ 672 VehicleSpeed: 2 ECU_A
+ SG_ Speed : 0|16@1+ (0.1,0) [0|250] "km/h" ECU_B</code></pre>
+<ul>
+<li><code>BO_ 672</code> : message d’identifiant 672 (<code>0x2A0</code>), DLC 2, émis par <code>ECU_A</code>.</li>
+<li><code>0|16</code> : bit de départ 0, longueur 16 bits.</li>
+<li><code>@1+</code> : ordre Intel, non signé.</li>
+<li><code>(0.1,0)</code> : facteur 0,1 et décalage 0. <code>[0|250]</code> : plage physique.</li>
+</ul>
+<p><b>valeur physique = valeur brute × facteur + décalage</b></p>
+</section>
+
+<section class="slide">
+<h2>Intel ou Motorola ?</h2>
+<div class="tw"><table>
+<tr><th></th><th>Intel (<code>@1</code>)</th><th>Motorola (<code>@0</code>)</th></tr>
+<tr><th>Octet 0</th><td>poids faible</td><td>poids fort</td></tr>
+<tr><th>Octet 1</th><td>poids fort</td><td>poids faible</td></tr>
+<tr><th>1000 = <code>0x03E8</code></th><td><code>E8 03</code></td><td><code>03 E8</code></td></tr>
+<tr><th>Bit de départ</th><td>bit de poids faible</td><td>bit de poids fort</td></tr>
+</table></div>
+<p>Les octets <code>12 34</code> valent <b>13 330</b> en Intel et <b>4 660</b> en Motorola. Se tromper d’ordre est une erreur très fréquente.</p>
+</section>
+
+<section class="slide">
+<h2>Facteur, décalage et signe</h2>
+<div class="grid">
+<div class="card"><b>Facteur et décalage</b>Représenter une grandeur physique avec peu de bits. Température : 123 × 1 − 40 = <b>83 °C</b>.</div>
+<div class="card"><b>Signal signé</b>Complément à deux : sur 8 bits, <code>0xFE</code> vaut −2.</div>
+<div class="card"><b>Valeurs réservées</b>Souvent <code>0xFF</code> pour « invalide » : une convention du constructeur, pas du CAN.</div>
+</div>
+</section>
+
+<section class="slide">
+<h2>Signaux non alignés</h2>
+<svg viewBox="0 0 520 110" role="img" aria-label="Octet 0x30 : les bits 7 à 4 forment le signal Gear" fill="none" stroke="currentColor" stroke-width="2" font-size="14">
+<rect x="20" y="40" width="240" height="40" stroke="var(--accent)" stroke-width="3"/><rect x="260" y="40" width="240" height="40"/>
+<g stroke-width="1.5"><line x1="80" y1="40" x2="80" y2="80"/><line x1="140" y1="40" x2="140" y2="80"/><line x1="200" y1="40" x2="200" y2="80"/><line x1="320" y1="40" x2="320" y2="80"/><line x1="380" y1="40" x2="380" y2="80"/><line x1="440" y1="40" x2="440" y2="80"/></g>
+<g fill="currentColor" stroke="none" text-anchor="middle"><text x="50" y="30">7</text><text x="110" y="30">6</text><text x="170" y="30">5</text><text x="230" y="30">4</text><text x="290" y="30">3</text><text x="350" y="30">2</text><text x="410" y="30">1</text><text x="470" y="30">0</text>
+<text x="50" y="66">0</text><text x="110" y="66">0</text><text x="170" y="66">1</text><text x="230" y="66">1</text><text x="290" y="66">0</text><text x="350" y="66">0</text><text x="410" y="66">0</text><text x="470" y="66">0</text>
+<text x="140" y="102">Gear = 0011 = 3</text></g>
+</svg>
+<ul>
+<li>Signal <code>Gear</code> : bit de départ 12, longueur 4 (bits 4 à 7 de l’octet 1, ici <code>0x30</code>).</li>
+<li>Extraction : <code>(octet1 &gt;&gt; 4) &amp; 0xF</code> = 3. La table <code>VAL_</code> associe 3 à « Troisieme ».</li>
+</ul>
+</section>
+
+<section class="slide">
+<h2>Le temps de bit</h2>
+<svg viewBox="0 0 520 110" role="img" aria-label="Un bit de 16 quanta : Sync 1, Prop 7, Phase1 5, Phase2 3" fill="none" stroke="currentColor" stroke-width="2" font-size="12">
+<rect x="20" y="40" width="30" height="36"/><rect x="50" y="40" width="210" height="36"/><rect x="260" y="40" width="150" height="36"/><rect x="410" y="40" width="90" height="36"/>
+<line x1="410" y1="26" x2="410" y2="90" stroke="var(--accent)" stroke-width="3" stroke-dasharray="5 3"/>
+<g fill="currentColor" stroke="none" text-anchor="middle"><text x="35" y="62" font-size="11">Sync</text><text x="155" y="62">Prop_Seg</text><text x="335" y="62">Phase_Seg1</text><text x="455" y="62">Phase_Seg2</text><text x="35" y="96">1</text><text x="155" y="96">7</text><text x="335" y="96">5</text><text x="455" y="96">3</text><text x="410" y="18">point d’échantillonnage</text></g>
+</svg>
+<ul>
+<li>Un bit est découpé en <b>quanta de temps</b> (tq).</li>
+<li><b>Prop_Seg</b> compense la propagation ; <b>Phase_Seg1/2</b> encadrent l’échantillonnage et permettent la resynchronisation.</li>
+<li>Point d’échantillonnage typique : <b>75 à 87,5 %</b> du bit.</li>
+</ul>
+</section>
+
+<section class="slide">
+<h2>Calculer le débit</h2>
+<pre><code>tq = prescaler / fréquence d’horloge
+durée d’un bit = nombre de tq × tq
+débit = 1 / durée d’un bit</code></pre>
+<div class="grid">
+<div class="card"><b>80 MHz, prescaler 10, 16 tq</b>tq = 125 ns, bit = 2 µs : <b>500 kbit/s</b>. Échantillonnage : (1 + 7 + 5) / 16 = <b>81,25 %</b>.</div>
+<div class="card"><b>40 MHz, prescaler 5, 32 tq</b>tq = 125 ns, bit = 4 µs : <b>250 kbit/s</b>.</div>
+</div>
+<p class="muted">Tous les nœuds partagent le même débit. En CAN FD : deux jeux de paramètres (nominal et données).</p>
+</section>
+
+<section class="slide">
+<h2>Les pièges courants</h2>
+<ul>
+<li><b>Ordre des octets</b> inversé : valeurs absurdes mais « plausibles ».</li>
+<li><b>Signe</b> oublié : −2 °C lu comme 254.</li>
+<li><b>Facteur ou décalage</b> erroné.</li>
+<li><b>Identifiant étendu :</b> dans un DBC, le bit 31 est positionné (<code>0x1C0</code> devient <code>0x800001C0</code>).</li>
+<li><b>DLC</b> plus court que prévu, ou <b>signaux multiplexés</b>.</li>
+<li>Compteurs et sommes de contrôle applicatives : ils font partie des données, pas du CRC CAN.</li>
+</ul>
+</section>
+
+<section class="slide">
+<h2>À retenir</h2>
+<ul>
+<li>Une trame ne contient que des octets : le <b>DBC</b> leur donne un sens.</li>
+<li>Chaque signal : bit de départ, longueur, ordre, signe, facteur, décalage.</li>
+<li><b>Intel</b> et <b>Motorola</b> donnent des valeurs différentes pour les mêmes octets.</li>
+<li>Valeur physique = brute × facteur + décalage.</li>
+<li>Le <b>temps de bit</b> combine prescaler, nombre de tq et point d’échantillonnage.</li>
+</ul>
+<p class="muted">À essayer : <code>cantools</code> et <code>python-can</code>, dans la page Ressources.</p>
+</section>
+
+</main>
+<div class="prog"><i id="p"></i></div>
+<div class="bar">
+<button id="prev" aria-label="Diapositive précédente">← Précédent</button>
+<span id="c" aria-live="polite">1 / 10</span>
+<span><button id="fs">Plein écran</button> <button id="next" aria-label="Diapositive suivante">Suivant →</button></span>
+</div>
+<script>
+const d=document.getElementById('deck'),n=d.children.length,c=document.getElementById('c'),p=document.getElementById('p');
+const cur=()=>Math.round(d.scrollLeft/d.clientWidth);
+const go=i=>d.scrollTo({left:Math.max(0,Math.min(n-1,i))*d.clientWidth});
+d.addEventListener('scroll',()=>{const i=cur();c.textContent=(i+1)+' / '+n;p.style.width=((i+1)/n*100)+'%'});
+document.getElementById('prev').onclick=()=>go(cur()-1);
+document.getElementById('next').onclick=()=>go(cur()+1);
+document.getElementById('fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}};
+document.addEventListener('keydown',e=>{
+const k=e.key;
+if(k==='ArrowRight'||k==='PageDown'||k===' '){e.preventDefault();go(cur()+1)}
+else if(k==='ArrowLeft'||k==='PageUp'){e.preventDefault();go(cur()-1)}
+else if(k==='Home'){go(0)}else if(k==='End'){go(n-1)}
+});
+d.focus();
+</script>
+</body>
+</html>
