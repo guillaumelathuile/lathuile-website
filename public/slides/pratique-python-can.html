@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pratique : décoder des trames avec Python – Lathuile</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#14213d;--muted:#5b6678;--line:#d9dde5;--accent:#1f6f5c}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1623;--card:#172033;--ink:#e8ecf4;--muted:#93a0b5;--line:#263149;--accent:#5fc4a8}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Instrument Sans Variable",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+.deck{flex:1;min-height:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none}
+.deck::-webkit-scrollbar{display:none}
+.slide{flex:0 0 100%;scroll-snap-align:start;padding:clamp(1rem,4vw,2.5rem) clamp(1.25rem,6vw,4rem);overflow-y:auto;display:flex;flex-direction:column;justify-content:center;gap:1rem}
+h1{font-size:clamp(1.9rem,6vw,3.4rem);letter-spacing:-.03em;line-height:1.1;margin:0}
+h2{font-size:clamp(1.3rem,3.6vw,2rem);letter-spacing:-.02em;margin:0}
+h2::after{content:"";display:block;width:2.5rem;height:4px;background:var(--accent);margin-top:.6rem}
+p,li{font-size:clamp(.95rem,2vw,1.15rem);line-height:1.5;margin:0}
+ul{margin:0;padding-left:1.2rem;display:grid;gap:.5rem}
+.muted{color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:.75rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:.8rem 1rem;font-size:clamp(.9rem,1.9vw,1.05rem);line-height:1.45}
+.card b{display:block;color:var(--accent);margin-bottom:.2rem}
+svg{width:100%;max-width:640px;height:auto;align-self:center}
+code{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:.05rem .35rem;font-size:.92em}
+pre{margin:0;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:.8rem 1rem;overflow-x:auto;font-size:clamp(.7rem,1.6vw,.92rem);line-height:1.5}
+pre code{border:0;padding:0;background:none}
+.out{border-left:3px solid var(--accent)}
+.prog{height:3px;background:var(--line)}.prog i{display:block;height:100%;width:10%;background:var(--accent);transition:width .25s}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.6rem 1rem}
+button{font:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:.4rem .9rem;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button:focus-visible,.deck:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.deck{scroll-behavior:auto}.prog i{transition:none}}
+</style>
+</head>
+<body>
+<main class="deck" id="deck" tabindex="0" aria-label="Diaporama : décoder des trames avec Python">
+
+<section class="slide">
+<p class="muted">Réseaux automobiles · Module 5</p>
+<h1>Pratique : décoder des trames avec Python</h1>
+<p>Lire un DBC, encoder et décoder, simuler un bus, rejouer un enregistrement. Sans matériel.</p>
+<p class="muted">Exemples fictifs. Faites défiler avec les flèches du clavier, le balayage ou les boutons.</p>
+</section>
+
+<section class="slide">
+<h2>Ce qu’on va faire</h2>
+<svg viewBox="0 0 640 120" role="img" aria-label="Un fichier DBC et deux bibliothèques Python" fill="none" stroke="currentColor" stroke-width="2" font-size="13">
+<rect x="10" y="25" width="170" height="70" rx="4"/><rect x="235" y="25" width="170" height="70" rx="4" stroke="var(--accent)" stroke-width="3"/><rect x="460" y="25" width="170" height="70" rx="4"/>
+<path d="M184 60 H231 M223 54 L231 60 L223 66"/><path d="M409 60 H456 M448 54 L456 60 L448 66"/>
+<g fill="currentColor" stroke="none" text-anchor="middle"><text x="95" y="55">exemple.dbc</text><text x="95" y="75" font-size="11">description du réseau</text>
+<text x="320" y="55">cantools</text><text x="320" y="75" font-size="11">encode et décode</text>
+<text x="545" y="55">python-can</text><text x="545" y="75" font-size="11">envoie et reçoit</text></g>
+</svg>
+<p>Un bus <b>virtuel</b> remplace le matériel : un émetteur et un récepteur échangent de vraies trames, dans le même programme.</p>
+</section>
+
+<section class="slide">
+<h2>Installation</h2>
+<pre><code>mkdir pratique-can &amp;&amp; cd pratique-can
+python3 -m venv venv
+source venv/bin/activate
+pip install python-can cantools</code></pre>
+<ul>
+<li><b>cantools</b> : lit les fichiers DBC, encode et décode les messages.</li>
+<li><b>python-can</b> : envoie et reçoit des trames, sur un vrai bus ou un bus virtuel.</li>
+</ul>
+<p class="muted">Windows : activer l’environnement avec <code>venv\Scripts\activate</code>.</p>
+</section>
+
+<section class="slide">
+<h2>Le fichier DBC fictif</h2>
+<pre><code>BU_: ECU_A ECU_B
+
+BO_ 672 VehicleSpeed: 2 ECU_A
+ SG_ Speed : 0|16@1+ (0.1,0) [0|250] "km/h" ECU_B
+
+BO_ 448 EngineData: 2 ECU_A
+ SG_ CoolantTemp : 0|8@1+ (1,-40) [-40|215] "degC" ECU_B
+ SG_ Gear : 12|4@1+ (1,0) [0|15] "" ECU_B
+
+BO_ 1024 SpeedMotorola: 2 ECU_A
+ SG_ SpeedM : 7|16@0+ (0.1,0) [0|250] "km/h" ECU_B
+
+VAL_ 448 Gear 0 "Neutre" 1 "Premiere" 3 "Troisieme" ;</code></pre>
+<p class="muted">Extrait : le fichier complet (avec l’en-tête <code>VERSION</code>, <code>NS_</code>, <code>BS_</code>) est dans le texte du module.</p>
+</section>
+
+<section class="slide">
+<h2>Décoder un message</h2>
+<pre><code>import cantools
+db = cantools.database.load_file("exemple.dbc")
+
+print(db.decode_message(0x2A0, bytes([0xE8, 0x03])))
+print(db.decode_message(0x1C0, bytes([0x7B, 0x30])))
+print(db.decode_message(0x1C0, bytes([0x7B, 0x30]),
+                        decode_choices=False))</code></pre>
+<pre class="out"><code>{'Speed': 100.0}
+{'CoolantTemp': 83, 'Gear': 'Troisieme'}
+{'CoolantTemp': 83, 'Gear': 3}</code></pre>
+</section>
+
+<section class="slide">
+<h2>Encoder, et Intel contre Motorola</h2>
+<pre><code>print(db.encode_message("VehicleSpeed", {"Speed": 100.0}).hex(" "))
+print(db.encode_message("SpeedMotorola", {"SpeedM": 100.0}).hex(" "))</code></pre>
+<pre class="out"><code>e8 03
+03 e8</code></pre>
+<p>Même vitesse de 100 km/h : les octets sont inversés selon l’ordre déclaré dans le DBC.</p>
+</section>
+
+<section class="slide">
+<h2>Un bus virtuel</h2>
+<svg viewBox="0 0 640 110" role="img" aria-label="Un émetteur, un bus virtuel, un récepteur" fill="none" stroke="currentColor" stroke-width="2" font-size="13">
+<rect x="10" y="30" width="140" height="50" rx="4"/><rect x="250" y="30" width="140" height="50" rx="4" stroke="var(--accent)" stroke-width="3"/><rect x="490" y="30" width="140" height="50" rx="4"/>
+<path d="M154 55 H246 M238 49 L246 55 L238 61"/><path d="M394 55 H486 M478 49 L486 55 L478 61"/>
+<g fill="currentColor" stroke="none" text-anchor="middle"><text x="80" y="60">Émetteur</text><text x="320" y="52">Bus virtuel</text><text x="320" y="70" font-size="11">canal « demo »</text><text x="560" y="52">Récepteur</text><text x="560" y="70" font-size="11">décode avec le DBC</text></g>
+</svg>
+<pre><code>emetteur  = can.Bus(interface="virtual", channel="demo")
+recepteur = can.Bus(interface="virtual", channel="demo")
+emetteur.send(can.Message(arbitration_id=0x2A0, data=data,
+                          is_extended_id=False))
+msg = recepteur.recv(timeout=0.5)</code></pre>
+</section>
+
+<section class="slide">
+<h2>Résultat sur le bus virtuel</h2>
+<pre class="out"><code>0x2A0 e8 03 -&gt; {'Speed': 100.0}
+0x1C0 7b 30 -&gt; {'CoolantTemp': 83, 'Gear': 'Troisieme'}
+0x2A0 b5 04 -&gt; {'Speed': 120.5}
+0x1C0 7d 30 -&gt; {'CoolantTemp': 85, 'Gear': 'Troisieme'}</code></pre>
+<p>Vérification à la main : 120,5 km/h → valeur brute 1205 = <code>0x04B5</code> → en Intel : <code>b5 04</code>.</p>
+</section>
+
+<section class="slide">
+<h2>Rejouer un enregistrement</h2>
+<pre><code>(1700000000.000000) vcan0 2A0#E803
+(1700000000.010000) vcan0 1C0#7B30
+(1700000000.100000) vcan0 2A0#D007
+(1700000000.110000) vcan0 1C0#3C10</code></pre>
+<pre><code>for msg in can.LogReader("trace.log"):
+    print(db.decode_message(msg.arbitration_id, msg.data))</code></pre>
+<pre class="out"><code>{'Speed': 100.0}   {'CoolantTemp': 83, 'Gear': 'Troisieme'}
+{'Speed': 200.0}   {'CoolantTemp': 20, 'Gear': 'Premiere'}</code></pre>
+</section>
+
+<section class="slide">
+<h2>À retenir</h2>
+<ul>
+<li><b>cantools</b> encode et décode avec un DBC ; <b>python-can</b> envoie et reçoit des trames.</li>
+<li>Le <b>bus virtuel</b> permet de s’exercer sans matériel.</li>
+<li>Intel et Motorola donnent des octets différents pour une même valeur.</li>
+<li>Un enregistrement se <b>rejoue</b> avec <code>LogReader</code>.</li>
+<li><b>Sur du vrai matériel :</b> écouter d’abord, n’émettre que sur un banc d’essai, jamais sur un véhicule roulant.</li>
+</ul>
+<p class="muted">Prochain parcours : architecture et diagnostic (UDS, AUTOSAR, ISO 26262).</p>
+</section>
+
+</main>
+<div class="prog"><i id="p"></i></div>
+<div class="bar">
+<button id="prev" aria-label="Diapositive précédente">← Précédent</button>
+<span id="c" aria-live="polite">1 / 10</span>
+<span><button id="fs">Plein écran</button> <button id="next" aria-label="Diapositive suivante">Suivant →</button></span>
+</div>
+<script>
+const d=document.getElementById('deck'),n=d.children.length,c=document.getElementById('c'),p=document.getElementById('p');
+const cur=()=>Math.round(d.scrollLeft/d.clientWidth);
+const go=i=>d.scrollTo({left:Math.max(0,Math.min(n-1,i))*d.clientWidth});
+d.addEventListener('scroll',()=>{const i=cur();c.textContent=(i+1)+' / '+n;p.style.width=((i+1)/n*100)+'%'});
+document.getElementById('prev').onclick=()=>go(cur()-1);
+document.getElementById('next').onclick=()=>go(cur()+1);
+document.getElementById('fs').onclick=()=>{try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(e){}};
+document.addEventListener('keydown',e=>{
+const k=e.key;
+if(k==='ArrowRight'||k==='PageDown'||k===' '){e.preventDefault();go(cur()+1)}
+else if(k==='ArrowLeft'||k==='PageUp'){e.preventDefault();go(cur()-1)}
+else if(k==='Home'){go(0)}else if(k==='End'){go(n-1)}
+});
+d.focus();
+</script>
+</body>
+</html>
