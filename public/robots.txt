@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://guillaumelathuile.github.io/lathuile-website/sitemap-index.xml
